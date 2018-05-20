@@ -20,13 +20,16 @@ def AmzonParser(url):
 
  
             RAW_CATEGORY = doc.xpath(XPATH_CATEGORY)
-
- 
-            
             CATEGORY = ' > '.join([i.strip() for i in RAW_CATEGORY]) if RAW_CATEGORY else None
+ 
+            #If product in Amazon Pantry.
+            if CATEGORY == None:   
+                XPATH_CATEGORY = '//span[@class="zg_hrsr_ladder"]//text()'
+                RAW_CATEGORY = doc.xpath(XPATH_CATEGORY)
+                CATEGORY = ' > '.join([i.strip() for i in RAW_CATEGORY]) if RAW_CATEGORY else None
            
             if page.status_code!=200:
-                raise ValueError('captha')
+                return "Captcha"
             print(CATEGORY)
             return CATEGORY
         except Exception as e:
@@ -48,16 +51,11 @@ for Item in SearchList:
 
     #If Product is not found on Amazon, Set Catagory as NONE and continue
     if(Product==None):
-        print("NONE")
+        print("NotAvailable")
+        Extracted_Data.append("NotAvailable")
         continue
     print("\nFound "+Product.title)
 
-
-    #if Product is  Sponsored Takes next result
-    i=1
-    while(re.match('\[Sponsored\]',Product.title)):
-        i+=1
-        Product=Result.rget(i)
 
 
     #get Product Amazon Id
@@ -72,6 +70,8 @@ for Item in SearchList:
     url = "http://www.amazon.in/dp/"+Azid
     print("Processing: "+url)
     Extracted_Data.append(AmzonParser(url))
+    if Extracted_Data[-1] == "captcha":
+        break
     sleep(1)
 
 
